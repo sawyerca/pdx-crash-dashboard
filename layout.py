@@ -8,10 +8,10 @@ def create_header():
 
     return html.Div([
         html.Div([
-            html.H1("Spatial Analysis of Car Crashes in the Portland Area", 
+            html.H1("Portland Car Crash Visualization", 
                    style={
                        'fontSize': '1.75rem',
-                       'fontWeight': '600',
+                       'fontWeight': '700',
                        'margin': '0',
                        'color': 'white'})], 
 

@@ -27,7 +27,7 @@ def register_callbacks(app):
 
         if mode == 'base':
             plot_data = heatmap_data()
-            title_text = "Portland Traffic Incidents Base Heatmap"
+            title_text = "Portland Crashes Base Heatmap"
 
         elif mode == 'weather':
             plot_data, expected_prop, total_bins = weather_overrep_data(
@@ -36,11 +36,11 @@ def register_callbacks(app):
             
             if total_bins > 0:
                 if bins_shown > 0:
-                    title_text = f"{weather_type} Weather Overrepresentation ≥{ord_suffix(overrep_percentile)} %ile | Overall {weather_type} Proportion: {expected_prop:.2%} | {bins_shown} locations shown"
+                    title_text = f"{weather_type} Weather Overrepresentation ≥{ord_suffix(overrep_percentile)} %ile | Overall {weather_type} Proportion: {expected_prop:.2%} | {bins_shown} bins shown"
                 else:
-                    title_text = f"{weather_type} Weather Analysis | No locations meet {ord_suffix(overrep_percentile)} percentile threshold"
+                    title_text = f"{weather_type} Weather Overrepresentation | No locations meet {ord_suffix(overrep_percentile)} percentile threshold"
             else:
-                title_text = f"{weather_type} Weather Analysis | Insufficient data for analysis"
+                title_text = f"{weather_type} Weather Overrepresentation | Insufficient data for analysis"
 
         elif mode == 'time':
             plot_data, expected_prop, total_bins = time_overrep_data(
@@ -49,11 +49,11 @@ def register_callbacks(app):
             
             if total_bins > 0:
                 if bins_shown > 0:
-                    title_text = f"Time Period {selected_hour}:00-{selected_hour}:59 Overrepresentation ≥{ord_suffix(overrep_percentile)} %ile | Overall {selected_hour}:00-{selected_hour}:59 Proportion: {expected_prop:.2%} | {bins_shown} locations shown"
+                    title_text = f"Time Period {selected_hour}:00-{selected_hour}:59 Overrepresentation ≥{ord_suffix(overrep_percentile)} %ile | Overall {selected_hour}:00-{selected_hour}:59 Proportion: {expected_prop:.2%} | {bins_shown} bins shown"
                 else:
-                    title_text = f"Time Period {selected_hour}:00-{selected_hour}:59 Analysis | No locations meet {ord_suffix(overrep_percentile)} percentile threshold"
+                    title_text = f"Time Period {selected_hour}:00-{selected_hour}:59 Overrepresentation | No locations meet {ord_suffix(overrep_percentile)} percentile threshold"
             else:
-                title_text = f"Time Period {selected_hour}:00-{selected_hour}:59 Analysis | Insufficient data"
+                title_text = f"Time Period {selected_hour}:00-{selected_hour}:59 Overrepresentation | Insufficient data"
 
         else:  
             plot_data, expected_prop, total_bins = month_overrep_data(
@@ -63,11 +63,11 @@ def register_callbacks(app):
             
             if total_bins > 0:
                 if bins_shown > 0:
-                    title_text = f"{month_name} Seasonal Analysis ≥{ord_suffix(overrep_percentile)} %ile | Overall {month_name} Proportion: {expected_prop:.2%} | {bins_shown} locations shown"
+                    title_text = f"{month_name} Overrepresentation ≥{ord_suffix(overrep_percentile)} %ile | Overall {month_name} Proportion: {expected_prop:.2%} | {bins_shown} bins shown"
                 else:
-                    title_text = f"{month_name} Seasonal Analysis | No locations meet {ord_suffix(overrep_percentile)} percentile threshold"
+                    title_text = f"{month_name} Overrepresentation | No locations meet {ord_suffix(overrep_percentile)} percentile threshold"
             else:
-                title_text = f"{month_name} Seasonal Analysis | Insufficient data"
+                title_text = f"{month_name} Overrepresentation | Insufficient data"
 
         fig = px.density_map(
             plot_data,
@@ -96,8 +96,8 @@ def register_callbacks(app):
             font=dict(color='white', family='Inter'),
             autosize=True,
             coloraxis_colorbar=dict(
-                title="Incident Density",
-                title_font=dict(size=10, family='Inter'),
+                title="Normalized Density",
+                title_font=dict(size=12, family='Inter'),
                 tickfont=dict(size=9, family='Inter')))
 
         fig.update_traces(zmin=0, zmax=1)

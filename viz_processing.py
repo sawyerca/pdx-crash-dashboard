@@ -8,6 +8,7 @@ portland_crashes = None
 global_weather_props = None
 global_hour_props = None
 global_month_props = None
+bin_size = 0.00001
 
 def load_crashes():
     """Loading and preprocessing"""
@@ -20,40 +21,40 @@ def load_crashes():
         'CRASH_HR_NO': 'int8',
         'CRASH_MO_NO': 'int8'}
     
-    try:
-        needed_cols = ['LAT_DD', 'LONGTD_DD', 'WTHR_COND_SHORT_DESC', 'CRASH_HR_NO', 'CRASH_MO_NO']
-        portland_crashes = pd.read_csv('portland_crashes.CSV', dtype=dtypes, usecols=needed_cols)
+    needed_cols = ['LAT_DD', 'LONGTD_DD', 'WTHR_COND_SHORT_DESC', 'CRASH_HR_NO', 'CRASH_MO_NO']
+    portland_crashes = pd.read_csv('portland_crashes.CSV', dtype=dtypes, usecols=needed_cols)
+    
+    portland_crashes = portland_crashes.dropna(subset=['LAT_DD', 'LONGTD_DD'])
+    
+    weather_mask = portland_crashes['WTHR_COND_SHORT_DESC'].str.contains('CLR|RAIN|CLD|SNOW', case=False, na=False)
+    weather_subset = portland_crashes[weather_mask].copy()
+    
+    weather_subset['weather_type'] = weather_subset['WTHR_COND_SHORT_DESC'].apply(lambda x:
+        'Clear' if 'CLR' in str(x).upper() else
+        'Rain' if 'RAIN' in str(x).upper() else
+        'Cloudy' if 'CLD' in str(x).upper() else
+        'Snow' if 'SNOW' in str(x).upper() else
+        'Other')
+    
+    weather_subset = weather_subset[weather_subset['weather_type'] != 'Other']
+    global_weather_props = weather_subset['weather_type'].value_counts(normalize=True)
+    
+    hour_subset = portland_crashes.dropna(subset=['CRASH_HR_NO'])
+    global_hour_props = hour_subset['CRASH_HR_NO'].value_counts(normalize=True).sort_index()
+    
+    month_subset = portland_crashes.dropna(subset=['CRASH_MO_NO'])
+    global_month_props = month_subset['CRASH_MO_NO'].value_counts(normalize=True).sort_index()
         
-        portland_crashes = portland_crashes.dropna(subset=['LAT_DD', 'LONGTD_DD'])
-        
-        weather_mask = portland_crashes['WTHR_COND_SHORT_DESC'].str.contains('CLR|RAIN|CLD|SNOW', case=False, na=False)
-        weather_subset = portland_crashes[weather_mask].copy()
-        
-        weather_subset['weather_type'] = weather_subset['WTHR_COND_SHORT_DESC'].apply(lambda x:
-            'Clear' if 'CLR' in str(x).upper() else
-            'Rain' if 'RAIN' in str(x).upper() else
-            'Cloudy' if 'CLD' in str(x).upper() else
-            'Snow' if 'SNOW' in str(x).upper() else
-            'Other')
-        
-        weather_subset = weather_subset[weather_subset['weather_type'] != 'Other']
-        global_weather_props = weather_subset['weather_type'].value_counts(normalize=True)
-        
-        hour_subset = portland_crashes.dropna(subset=['CRASH_HR_NO'])
-        global_hour_props = hour_subset['CRASH_HR_NO'].value_counts(normalize=True).sort_index()
-        
-        month_subset = portland_crashes.dropna(subset=['CRASH_MO_NO'])
-        global_month_props = month_subset['CRASH_MO_NO'].value_counts(normalize=True).sort_index()
-        
-    except Exception as e:
-        print(f"Error loading data: {e}")
+
 
 def heatmap_data():
     """Data for the base heatmap"""
 
+    decimal_places = max(1, int(-np.log10(bin_size)))
+
     df = portland_crashes[['LAT_DD', 'LONGTD_DD']].copy()
-    df['lat_bin'] = df['LAT_DD'].round(5)
-    df['lon_bin'] = df['LONGTD_DD'].round(4)
+    df['lat_bin'] = df['LAT_DD'].round(decimal_places)
+    df['lon_bin'] = df['LONGTD_DD'].round(decimal_places)
     grouped = df.groupby(['lat_bin', 'lon_bin']).size().reset_index(name='count')
     grouped['log_count'] = np.log1p(grouped['count'])
 
@@ -68,6 +69,7 @@ def heatmap_data():
 
 def weather_overrep_data(weather_type, min_crashes, overrep_percentile):
     """Data for weather overrepresentation"""
+
     expected_prop = global_weather_props[weather_type]
     
     weather_mask = portland_crashes['WTHR_COND_SHORT_DESC'].str.contains('CLR|RAIN|CLD|SNOW', case=False, na=False)
@@ -82,7 +84,7 @@ def weather_overrep_data(weather_type, min_crashes, overrep_percentile):
     else:  
         condition_mask = weather_df['WTHR_COND_SHORT_DESC'].str.contains('SNOW', case=False, na=False)
     
-    return _process_overrep_data(weather_df, condition_mask, expected_prop, min_crashes, overrep_percentile)
+    return process_overrep(weather_df, condition_mask, expected_prop, min_crashes, overrep_percentile)
 
 def time_overrep_data(selected_hour, min_crashes, overrep_percentile):
     """Data for time overrepresentation"""
@@ -91,7 +93,7 @@ def time_overrep_data(selected_hour, min_crashes, overrep_percentile):
     hour_df = portland_crashes.dropna(subset=['CRASH_HR_NO'])
     condition_mask = hour_df['CRASH_HR_NO'] == selected_hour
     
-    return _process_overrep_data(hour_df, condition_mask, expected_prop, min_crashes, overrep_percentile)
+    return process_overrep(hour_df, condition_mask, expected_prop, min_crashes, overrep_percentile)
 
 def month_overrep_data(selected_month, min_crashes, overrep_percentile):
     """Data for month overrepresentation"""
@@ -100,12 +102,11 @@ def month_overrep_data(selected_month, min_crashes, overrep_percentile):
     month_df = portland_crashes.dropna(subset=['CRASH_MO_NO'])
     condition_mask = month_df['CRASH_MO_NO'] == selected_month
     
-    return _process_overrep_data(month_df, condition_mask, expected_prop, min_crashes, overrep_percentile)
+    return process_overrep(month_df, condition_mask, expected_prop, min_crashes, overrep_percentile)
 
-def _process_overrep_data(df, condition_mask, expected_prop, min_crashes, overrep_percentile):
-    """Helper function to process overrepresentation data efficiently"""
+def process_overrep(df, condition_mask, expected_prop, min_crashes, overrep_percentile):
+    """Helper function to process overrepresentation"""
 
-    bin_size = 0.00001
     decimal_places = max(1, int(-np.log10(bin_size)))
     
     lat_bins = df['LAT_DD'].round(decimal_places)

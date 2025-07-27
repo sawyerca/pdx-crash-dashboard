@@ -1,7 +1,7 @@
 """Configuration and constants for the dashboard"""
 
 
-#NAMES/SCALES
+#NAMES/SCALES/FORMATTING
 
 MONTH_NAMES = {
     1: 'January', 2: 'February', 3: 'March', 4: 'April',
@@ -15,9 +15,6 @@ COLOR_SCALE = [
     [0.75, "rgba(249, 115, 22, 0.8)"],
     [1, "rgba(239, 68, 68, 0.9)"]]
 
-
-#STYLING
-
 def ord_suffix(n):
     """Convert number to ordinal string"""
 
@@ -26,6 +23,9 @@ def ord_suffix(n):
     else:
         suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
     return f"{n}{suffix}"
+
+
+#STYLING
 
 EXTERNAL_STYLESHEETS = [
     'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap']
