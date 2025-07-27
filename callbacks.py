@@ -2,7 +2,7 @@
 
 from dash import Input, Output
 import plotly.express as px
-from config import COLOR_SCALE, MONTH_NAMES, MAP_CENTER, MAP_ZOOM
+from config import COLOR_SCALE, MONTH_NAMES, MAP_CENTER, MAP_ZOOM, ord_suffix
 from viz_processing import (
     heatmap_data, 
     weather_overrep_data,
@@ -36,9 +36,9 @@ def register_callbacks(app):
             
             if total_bins > 0:
                 if bins_shown > 0:
-                    title_text = f"{weather_type} Weather Overrepresentation ≥{overrep_percentile}th %ile | Overall {weather_type} Proportion: {expected_prop:.2%} | {bins_shown} locations shown"
+                    title_text = f"{weather_type} Weather Overrepresentation ≥{ord_suffix(overrep_percentile)} %ile | Overall {weather_type} Proportion: {expected_prop:.2%} | {bins_shown} locations shown"
                 else:
-                    title_text = f"{weather_type} Weather Analysis | No locations meet {overrep_percentile}th percentile threshold"
+                    title_text = f"{weather_type} Weather Analysis | No locations meet {ord_suffix(overrep_percentile)} percentile threshold"
             else:
                 title_text = f"{weather_type} Weather Analysis | Insufficient data for analysis"
 
@@ -49,9 +49,9 @@ def register_callbacks(app):
             
             if total_bins > 0:
                 if bins_shown > 0:
-                    title_text = f"Time Period {selected_hour}:00-{selected_hour}:59 Overrepresentation ≥{overrep_percentile}th %ile | Overall {selected_hour}:00-{selected_hour}:59 Proportion: {expected_prop:.2%} | {bins_shown} locations shown"
+                    title_text = f"Time Period {selected_hour}:00-{selected_hour}:59 Overrepresentation ≥{ord_suffix(overrep_percentile)} %ile | Overall {selected_hour}:00-{selected_hour}:59 Proportion: {expected_prop:.2%} | {bins_shown} locations shown"
                 else:
-                    title_text = f"Time Period {selected_hour}:00-{selected_hour}:59 Analysis | No locations meet threshold"
+                    title_text = f"Time Period {selected_hour}:00-{selected_hour}:59 Analysis | No locations meet {ord_suffix(overrep_percentile)} percentile threshold"
             else:
                 title_text = f"Time Period {selected_hour}:00-{selected_hour}:59 Analysis | Insufficient data"
 
@@ -63,9 +63,9 @@ def register_callbacks(app):
             
             if total_bins > 0:
                 if bins_shown > 0:
-                    title_text = f"{month_name} Seasonal Analysis ≥{overrep_percentile}th %ile | Overall {month_name} Proportion: {expected_prop:.2%} | {bins_shown} locations shown"
+                    title_text = f"{month_name} Seasonal Analysis ≥{ord_suffix(overrep_percentile)} %ile | Overall {month_name} Proportion: {expected_prop:.2%} | {bins_shown} locations shown"
                 else:
-                    title_text = f"{month_name} Seasonal Analysis | No locations meet threshold"
+                    title_text = f"{month_name} Seasonal Analysis | No locations meet {ord_suffix(overrep_percentile)} percentile threshold"
             else:
                 title_text = f"{month_name} Seasonal Analysis | Insufficient data"
 

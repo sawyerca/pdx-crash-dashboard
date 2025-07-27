@@ -18,6 +18,15 @@ COLOR_SCALE = [
 
 #STYLING
 
+def ord_suffix(n):
+    """Convert number to ordinal string"""
+
+    if 10 <= n % 100 <= 20:  
+        suffix = 'th'
+    else:
+        suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')
+    return f"{n}{suffix}"
+
 EXTERNAL_STYLESHEETS = [
     'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap']
 

@@ -9,7 +9,7 @@ from viz_processing import load_crashes
 
 #LOAD/REGISTER/ETC
 
-app = dash.Dash(__name__, external_stylesheets=EXTERNAL_STYLESHEETS)
+app = dash.Dash(__name__, external_stylesheets=EXTERNAL_STYLESHEETS, title="PDX Crash Visualization")
 server = app.server
 
 app.index_string = INDEX_STRING
